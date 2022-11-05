@@ -5,12 +5,9 @@
 function(allStates)
     if GetTime() < aura_env.nextUpdate then return false end
     aura_env.nextUpdate = GetTime() + aura_env.config.updateInterval
-    
-    -- clean up previous states, they will be overwritten
-    for _, state in pairs(allStates) do
-        state.show = false
-        state.changed = true
-    end
+
+    local hasAnyStateChanged = false
+    local shownUnits = {}
 
     -- update all our indicators
     for unit in WA_IterateGroupMembers() do
@@ -61,37 +58,51 @@ function(allStates)
             end
         end
 
-        allStates[unit] = {
-            show = true,
-            changed = true,
-            unit = unit,
-            progressType = "static",
-            value = health,
-            total = healthMax,
-            additionalProgress = {
-                {
-                    min = lowBound,
-                    max = highBound,
+        if not allStates[unit]
+            or allStates[unit].value ~= health
+            or allStates[unit].total ~= healthMax
+            or allStates[unit].additionalProgress[1].min ~= lowBound
+            or allStates[unit].additionalProgress[1].max ~= highBound
+        then
+            allStates[unit] = {
+                show = true,
+                changed = true,
+                unit = unit,
+                progressType = "static",
+                value = health,
+                total = healthMax,
+                additionalProgress = {
+                    {
+                        min = lowBound,
+                        max = highBound,
+                    },
                 },
-            },
-        }
+            }
+            hasAnyStateChanged = true
+        else
+            allStates[unit].changed = false
+        end
+        table.insert(shownUnits, unit)
     end
 
-    -- update regions
-    for cloneId, _ in pairs(allStates) do
-        local region = WeakAuras.GetRegion(aura_env.id, cloneId)
-        if region then
-            local parentFrame = region:GetParent()
-            if parentFrame then
-                if aura_env.config.shouldFillWidth and region:GetWidth() ~= parentFrame:GetWidth() then
-                    region:SetRegionWidth(parentFrame:GetWidth())
-                end
-                if aura_env.config.shouldFillHeight and region:GetHeight() ~= parentFrame:GetHeight() then
-                    region:SetRegionHeight(parentFrame:GetHeight())
-                end
+    -- clean up states that are no longer displayed
+    for unit, state in pairs(allStates) do
+        -- check if the unit is still displayed
+        local isCurrentlyShown = false
+        for _, shownUnit in ipairs(shownUnits) do
+            if unit == shownUnit then
+                isCurrentlyShown = true
+                break
             end
+        end
+
+        -- and if it isn't, remove its state
+        if not isCurrentlyShown then
+            state.show = false
+            state.changed = true
+            hasAnyStateChanged = true
         end
     end
 
-    return true
+    return hasAnyStateChanged
 end
