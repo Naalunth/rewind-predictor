@@ -20,9 +20,8 @@ function()
             -- set the next time this needs to update to whenever the next entry runs out
             aura_env.nextUpdate = math.min(aura_env.nextUpdate, damageData[1].time + aura_env.CLEAR_TIME)
         end
+        WeakAuras.ScanEvents("RECENT_DAMAGE_TAKEN_CHANGED", aura_env.damageData, guid)
     end
-
-    WeakAuras.ScanEvents("RECENT_DAMAGE_TAKEN_CHANGED", aura_env.damageData)
 
     return false
 end

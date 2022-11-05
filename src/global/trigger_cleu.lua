@@ -24,6 +24,6 @@ function(_, _, subEvent, _, _, _, _, _, destGUID, _, destFlags, _, ...)
         table.insert(aura_env.damageData[destGUID], {time = GetTime(), damage = damage})
         aura_env.nextUpdate = math.min(aura_env.nextUpdate, GetTime() + aura_env.CLEAR_TIME)
 
-        WeakAuras.ScanEvents("RECENT_DAMAGE_TAKEN_CHANGED", aura_env.damageData)
+        WeakAuras.ScanEvents("RECENT_DAMAGE_TAKEN_CHANGED", aura_env.damageData, destGUID)
     end
 end
