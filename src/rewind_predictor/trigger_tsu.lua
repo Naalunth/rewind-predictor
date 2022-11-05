@@ -12,16 +12,6 @@ function(allStates)
         state.changed = true
     end
 
-    -- clean up damage events older than 5 seconds
-    for guid, damageData in pairs(aura_env.damageData) do
-        while #damageData > 0 and damageData[1].time + aura_env.REWIND_TIME < GetTime() do
-            table.remove(damageData, 1)
-        end
-        if #damageData == 0 then
-            aura_env[guid] = nil
-        end
-    end
-
     -- update all our indicators
     for unit in WA_IterateGroupMembers() do
         local guid = UnitGUID(unit)
@@ -29,12 +19,12 @@ function(allStates)
 
         if guid then
             -- add up all the damage done to the unit
-            local damageData = aura_env.damageData[guid] or {}
-            local damageSum = 0
+            local damageData = DamageTakenTracker.damageData[guid] or {}
             for _, entry in ipairs(damageData) do
-                damageSum = damageSum + entry.damage
+                if entry.time > GetTime() - aura_env.REWIND_TIME then
+                    predictedHeal = predictedHeal + entry.damage
+                end
             end
-            predictedHeal = damageSum
         end
 
         -- apply any additional logic that might modify the heal prediction
@@ -50,7 +40,7 @@ function(allStates)
         -- place the heal prediction bar according to user preference
         local lowBound, highBound
         local anchorPoint = aura_env.config.anchorPoint
-        local APOption = aura_env.Options.AnchorPoint
+        local APOption = DamageTakenTracker.Options.AnchorPoint
         if anchorPoint == APOption.START then
             lowBound = 0
             highBound = predictedHeal

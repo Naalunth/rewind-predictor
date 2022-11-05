@@ -1,8 +1,9 @@
 -- Event Type: Event
 -- Events: CLEU
+-- This trigger listens for all incoming damage events to allies and stores them
 
 ---@diagnostic disable-next-line: miss-name
-function(_, _, subEvent, _, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags, ...)
+function(_, _, subEvent, _, _, _, _, _, destGUID, _, destFlags, _, ...)
     local allyMask = bit.bor(COMBATLOG_OBJECT_AFFILIATION_MINE, COMBATLOG_OBJECT_AFFILIATION_PARTY, COMBATLOG_OBJECT_AFFILIATION_RAID)
 
     -- track all damage events on allies
