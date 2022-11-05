@@ -14,4 +14,11 @@ aura_env.config = {
 
     ---@type Options.AnchorPoint
     anchorPoint = nil,
+    
+    ---@enum Options.AnchorPoint
+    AnchorPoint = {
+        START = 1,
+        CURRENT_HEALTH = 2,
+        CURRENT_HEALTH_OVERFLOW = 3,
+    },
 }

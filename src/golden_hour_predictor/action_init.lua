@@ -11,3 +11,5 @@ aura_env.MODIFIERS = {
 
 ---Holds the next time we want to update our values
 aura_env.nextUpdate = GetTime()
+
+aura_env.damageData = {}
