@@ -15,8 +15,8 @@ function(_, _, subEvent, _, _, _, _, _, destGUID, _, destFlags, _, ...)
             prefixParameterCount = 3
         end
 
-        local damage = ({...})[prefixParameterCount + 1]
-        local absorbed = ({...})[prefixParameterCount + 6]
+        local damage = ({...})[prefixParameterCount + 1] or 0
+        local absorbed = ({...})[prefixParameterCount + 6] or 0
         local totalDamage = damage + absorbed
 
         local recentDamageSums = aura_env.recentDamageSums
