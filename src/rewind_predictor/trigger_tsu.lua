@@ -4,45 +4,46 @@
 ---@diagnostic disable-next-line: miss-name
 function(allStates, event, ...)
     -- first, figure out which unit actually changed
-    local unit
+    local unit, guid, predictedHeal
+    local params = {...}
     if event == "RECENT_DAMAGE_TAKEN_CHANGED" then
-        aura_env.damageData = ({...})[1]
+        aura_env.recentDamageSums, guid, predictedHeal = unpack(params)
         for groupMember in WA_IterateGroupMembers() do
-            if ({...})[2] == UnitGUID(groupMember) then
+            if guid == UnitGUID(groupMember) then
                 unit = groupMember
                 break
             end
         end
-    elseif event == "TRIGGER" and ({...})[1] == 2 then
-        unit = next(({...})[2])
+    elseif event == "TRIGGER" and params[1] == 2 then
+        unit = next(params[2])
+        guid = UnitGUID(unit)
+        predictedHeal = guid and aura_env.recentDamageSums[guid] or 0
     end
 
     if not unit then return false end
 
-    local guid = UnitGUID(unit)
-    local predictedHeal = 0
-
-    if guid then
-        -- add up all the damage done to the unit
-        local damageData = aura_env.damageData[guid] or {}
-        for _, entry in ipairs(damageData) do
-            if entry.time > GetTime() - aura_env.REWIND_TIME then
-                predictedHeal = predictedHeal + entry.damage
-            end
+    -- remove the clone for the unit if no heal is predicted
+    if predictedHeal == 0 then
+        if not allStates[unit] then
+            return false
+        else
+            allStates[unit] = {
+                show = false,
+                changed = true,
+            }
+            return true
         end
     end
 
     -- apply any additional logic that might modify the heal prediction
-    for _, modifier in pairs(aura_env.MODIFIERS) do
-        predictedHeal = modifier(predictedHeal)
-    end
+    predictedHeal = aura_env.MODIFIER(predictedHeal)
 
     local health = UnitHealth(unit)
     local healthMax = UnitHealthMax(unit)
     -- if I would heal more than someones max health, I really don't care about specifics
     predictedHeal = math.min(predictedHeal, healthMax)
 
-    -- place the heal prediction bar according to user preference
+    -- place the heal prediction bar according to user preference, even though no one will ever change this option
     local lowBound, highBound
     local anchorPoint = aura_env.config.anchorPoint
     local AnchorPointOption = {
@@ -66,8 +67,8 @@ function(allStates, event, ...)
         end
     end
 
+    -- change the clone if it needs changing, which it probably will generally speaking
     if not allStates[unit]
-        or allStates[unit].value ~= health
         or allStates[unit].total ~= healthMax
         or allStates[unit].additionalProgress[1].min ~= lowBound
         or allStates[unit].additionalProgress[1].max ~= highBound
@@ -77,7 +78,6 @@ function(allStates, event, ...)
             changed = true,
             unit = unit,
             progressType = "static",
-            value = health,
             total = healthMax,
             additionalProgress = {
                 {

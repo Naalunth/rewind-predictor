@@ -112,3 +112,10 @@ function IsPlayerSpell(spellID) end
 ---@param isPetSpell boolean? if `true`, will check if the currently active pet knows the spell; if false or omitted, will check if the player knows the spell
 ---@return boolean isKnown whether the player (or pet) knows the given spell
 function IsSpellKnown(spellID, isPetSpell) end
+
+C_Timer = {}
+
+---Schedules a timer.
+---@param seconds number -- Time in seconds before the timer finishes.
+---@param callback fun() -- Callback function to run.
+function C_Timer.After(seconds, callback) end
