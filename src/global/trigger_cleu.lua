@@ -15,8 +15,9 @@ function(_, _, subEvent, _, _, _, _, _, destGUID, _, destFlags, _, ...)
             prefixParameterCount = 3
         end
 
-        local damage = ({...})[prefixParameterCount + 1] or 0
-        local absorbed = ({...})[prefixParameterCount + 6] or 0
+        local params = {...}
+        local damage = params[prefixParameterCount + 1] or 0
+        local absorbed = params[prefixParameterCount + 6] or 0
         local totalDamage = damage + absorbed
 
         local recentDamageSums = aura_env.recentDamageSums
@@ -26,7 +27,7 @@ function(_, _, subEvent, _, _, _, _, _, destGUID, _, destFlags, _, ...)
         WeakAuras.ScanEvents("RECENT_DAMAGE_TAKEN_CHANGED", recentDamageSums, destGUID, recentDamageSums[destGUID])
 
         -- after 5 seconds, remove this instance from the running total again and send out an event
-        C_Timer.After(aura_env.CLEAR_TIME, function ()
+        C_Timer.After(aura_env.CLEAR_TIME, function()
             ---@type number?
             local newDamageSum = recentDamageSums[destGUID] - totalDamage
             -- crop down really small damage residuals, even if they should rarely become an issue
