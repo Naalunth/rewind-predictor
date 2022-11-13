@@ -15,6 +15,7 @@ function(allStates, event, ...)
     elseif event == "TRIGGER" and params[1] == 2 then
         local unitData
         unit, unitData = next(params[2])
+        if not unit then return false end
         guid = UnitGUID(unit)
         predictedHeal = guid and aura_env.recentDamageSums[guid] or 0
         health = unitData.health
